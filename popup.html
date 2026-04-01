@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeetCode Auto Solver</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="popup-header">
+      <div class="logo-row">
+        <div class="logo-icon">⚡</div>
+        <div>
+          <h1>LeetCode Solver</h1>
+          <p class="subtitle">AI-powered solutions</p>
+        </div>
+      </div>
+      <div id="status-badge" class="status-badge status-checking">
+        <span class="status-dot"></span>
+        <span id="status-text">Checking…</span>
+      </div>
+    </header>
+
+    <!-- Settings Card -->
+    <section class="card">
+      <h2>⚙️ Settings</h2>
+
+      <label class="field-label" for="server-url">Backend Server URL</label>
+      <div class="input-group">
+        <input type="url" id="server-url" placeholder="http://localhost:3000" spellcheck="false" />
+        <button id="test-btn" class="icon-btn" title="Test connection">🔗</button>
+      </div>
+
+      <label class="field-label" for="lang-select">Default Language</label>
+      <select id="lang-select">
+        <option value="python">Python3</option>
+        <option value="javascript">JavaScript</option>
+        <option value="typescript">TypeScript</option>
+        <option value="java">Java</option>
+        <option value="cpp">C++</option>
+        <option value="csharp">C#</option>
+        <option value="go">Go</option>
+        <option value="rust">Rust</option>
+      </select>
+
+      <button id="save-btn" class="primary-btn">
+        <span id="save-label">Save Settings</span>
+      </button>
+    </section>
+
+    <!-- Quick Guide -->
+    <section class="card card-muted">
+      <h2>🚀 Quick Start</h2>
+      <ol class="guide-list">
+        <li>Start the backend server (<code>python app.py</code>)</li>
+        <li>Navigate to any LeetCode problem</li>
+        <li>Click the <strong>⚡ Solve with AI</strong> button</li>
+        <li>Code is auto-inserted into the editor</li>
+      </ol>
+    </section>
+
+    <!-- Footer -->
+    <footer class="popup-footer">
+      <span>v1.0.0</span>
+      <a href="https://github.com" target="_blank" rel="noopener">GitHub ↗</a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

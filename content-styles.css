@@ -1,0 +1,159 @@
+/* ========================================
+   LeetCode Auto Solver — Injected Styles
+   ======================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ---- Solve Button ---- */
+#lc-solver-btn {
+  position: fixed;
+  top: 100px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6C5CE7, #A855F7, #EC4899);
+  color: #fff;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(168, 85, 247, 0.45),
+              0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  animation: lc-solver-slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform: translateX(120%);
+}
+
+#lc-solver-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.55),
+              0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+#lc-solver-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+#lc-solver-btn.lc-solver-loading {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+#lc-solver-btn .lc-solver-spinner {
+  display: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: lc-solver-spin 0.7s linear infinite;
+}
+
+#lc-solver-btn.lc-solver-loading .lc-solver-spinner {
+  display: block;
+}
+
+#lc-solver-btn.lc-solver-success {
+  background: linear-gradient(135deg, #10B981, #34D399);
+}
+
+#lc-solver-btn.lc-solver-error {
+  background: linear-gradient(135deg, #EF4444, #F87171);
+}
+
+/* ---- Language Selector Chip ---- */
+#lc-solver-lang-chip {
+  position: fixed;
+  top: 156px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 10px;
+  background: rgba(30, 30, 42, 0.85);
+  backdrop-filter: blur(12px);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #C4B5FD;
+  animation: lc-solver-slideIn 0.5s 0.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform: translateX(120%);
+}
+
+#lc-solver-lang-chip select {
+  background: transparent;
+  border: none;
+  color: #E9D5FF;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  padding-right: 4px;
+}
+
+#lc-solver-lang-chip select option {
+  background: #1E1E2A;
+  color: #E9D5FF;
+}
+
+/* ---- Toast Notification ---- */
+#lc-solver-toast {
+  position: fixed;
+  bottom: 32px;
+  right: 24px;
+  z-index: 99999;
+  padding: 14px 22px;
+  border-radius: 12px;
+  background: rgba(30, 30, 42, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  color: #E2E8F0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transform: translateY(120px);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#lc-solver-toast.lc-solver-show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+#lc-solver-toast.lc-solver-toast-success {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+#lc-solver-toast.lc-solver-toast-error {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* ---- Animations ---- */
+@keyframes lc-solver-slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes lc-solver-spin {
+  to { transform: rotate(360deg); }
+}
