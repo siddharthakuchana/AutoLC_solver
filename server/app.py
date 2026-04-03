@@ -23,20 +23,26 @@ client = OpenAI(
 
 # ---- Language prompt templates ----
 LANG_PROMPTS = {
-    "python":     "Solve this LeetCode problem in Python 3. Return ONLY the code inside the Solution class.",
-    "javascript": "Solve this LeetCode problem in JavaScript. Return ONLY the code for the solution function.",
-    "typescript": "Solve this LeetCode problem in TypeScript. Return ONLY the code for the solution function.",
-    "java":       "Solve this LeetCode problem in Java. Return ONLY the code inside the Solution class.",
-    "cpp":        "Solve this LeetCode problem in C++. Return ONLY the code inside the Solution class.",
-    "csharp":     "Solve this LeetCode problem in C#. Return ONLY the code inside the Solution class.",
-    "go":         "Solve this LeetCode problem in Go. Return ONLY the solution function.",
-    "rust":       "Solve this LeetCode problem in Rust. Return ONLY the impl Solution block.",
+    "python":     "Solve this LeetCode problem in Python 3. Return the COMPLETE code exactly as it should be submitted on LeetCode, including 'class Solution:' with all required method definitions. Include any necessary imports (e.g., from typing import List, Optional) at the top.",
+    "javascript": "Solve this LeetCode problem in JavaScript. Return the COMPLETE code exactly as it should be submitted on LeetCode, including the full function definition with 'var', or the '@param' / '@return' JSDoc if needed.",
+    "typescript": "Solve this LeetCode problem in TypeScript. Return the COMPLETE code exactly as it should be submitted on LeetCode, including the full function signature with types.",
+    "java":       "Solve this LeetCode problem in Java. Return the COMPLETE code exactly as it should be submitted on LeetCode, including the full 'class Solution { ... }' with all required method definitions and any necessary imports.",
+    "cpp":        "Solve this LeetCode problem in C++. Return the COMPLETE code exactly as it should be submitted on LeetCode, including the full 'class Solution { ... }' with all required method definitions and any necessary #include headers.",
+    "csharp":     "Solve this LeetCode problem in C#. Return the COMPLETE code exactly as it should be submitted on LeetCode, including the full 'public class Solution { ... }' with all required method definitions.",
+    "go":         "Solve this LeetCode problem in Go. Return the COMPLETE code exactly as it should be submitted on LeetCode, including the full function definition and any necessary imports.",
+    "rust":       "Solve this LeetCode problem in Rust. Return the COMPLETE code exactly as it should be submitted on LeetCode, including the full 'impl Solution { ... }' block.",
 }
 
 SYSTEM_PROMPT = (
-    "You are an expert competitive programmer. "
-    "Provide clean, efficient, and well-commented solutions. "
-    "Return ONLY the code — no explanations, no markdown fences, no extra text."
+    "You are an expert competitive programmer who solves LeetCode problems. "
+    "Your solutions MUST pass ALL test cases on LeetCode. "
+    "Rules:\n"
+    "1. Return ONLY the code — no explanations, no markdown fences (```), no extra text before or after the code.\n"
+    "2. The code must be COMPLETE and ready to paste directly into LeetCode's editor as a full replacement.\n"
+    "3. Include the complete class/function definition (e.g., 'class Solution:' for Python) with the exact method signature LeetCode expects.\n"
+    "4. Include any necessary imports at the top of the code.\n"
+    "5. Use optimal time and space complexity. Handle all edge cases.\n"
+    "6. Do NOT include any test code, main functions, or print statements — only the solution class/function."
 )
 
 
