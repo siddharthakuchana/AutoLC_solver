@@ -425,6 +425,19 @@
       if (result.language) currentLanguage = result.language;
     });
 
+    // Listen for changes from the extension popup so we don't need a browser refresh
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      if (namespace === "local" && changes.language) {
+        currentLanguage = changes.language.newValue;
+        // Also update the in-page chip dropdown to reflect the change visually
+        const selectEl = document.querySelector("#lc-solver-lang-chip select");
+        if (selectEl) {
+          selectEl.value = currentLanguage;
+        }
+        console.log("[LeetCode Solver] Language updated dynamically to:", currentLanguage);
+      }
+    });
+
     // Try to inject immediately
     injectUI();
 
