@@ -205,9 +205,8 @@
             }
 
             // Method 2: Try to find Monaco or CodeMirror 6 via React Fiber Traversal
-            // This is arguably the most bulletproof method for minified React apps.
             if (!success) {
-              const editorEls = document.querySelectorAll('.monaco-editor, .cm-editor');
+              const editorEls = document.querySelectorAll('.monaco-editor, .cm-editor, .react-codemirror2, [class*="editor-container"], .inputarea');
               for (const el of editorEls) {
                 let current = el;
                 let found = false;
@@ -260,7 +259,7 @@
 
             // Method 3: CodeMirror 6 (LeetCode's new dynamic layout DOM fallback)
             if (!success) {
-              const cmContent = document.querySelector('.cm-editor .cm-content[contenteditable="true"]');
+              const cmContent = document.querySelector('.cm-content[contenteditable="true"], [contenteditable="true"].cm-editor');
               if (cmContent) {
                  cmContent.focus();
                  const selection = window.getSelection();
@@ -274,10 +273,9 @@
               }
             }
 
-            // Method 4: Monaco Textarea Keyboard Simulation Fallback
-            // If we only use insertText, it won't clear the editor. Setting Ctrl+A clears it.
+            // Method 4: Ultra-broad Monaco Textarea Keyboard Simulation Fallback
             if (!success) {
-               const textarea = document.querySelector(".monaco-editor textarea.inputarea, .monaco-editor .inputarea");
+               const textarea = document.querySelector(".inputarea, textarea, [class*='monaco-mouse-cursor-text']");
                if (textarea) {
                   textarea.focus();
                   
@@ -294,10 +292,9 @@
                   });
                   textarea.dispatchEvent(keyEvent);
                   
-                  // Give Monaco a tiny tick to process the Ctrl+A selection
                   setTimeout(() => {
                       document.execCommand("insertText", false, code);
-                      window.postMessage({ type: cbId, success: true, message: "Code inserted via textarea Ctrl+A fallback (cleared & replaced)" }, "*");
+                      window.postMessage({ type: cbId, success: true, message: "Code inserted via generic textarea Ctrl+A fallback" }, "*");
                   }, 100);
                   return; // Prevent synchronous postMessage
                }
@@ -324,12 +321,15 @@
   // ---------- Clean Code ----------
 
   function extractCode(rawSolution) {
-    // Strip markdown code fences if present
-    const match = rawSolution.match(/```[\w]*\n([\s\S]*?)```/);
-    if (match) return match[1].trim();
+    // Strip markdown code fences if present. 
+    // Handle Windows CRLF, spaces, and special language IDs like c++, c#
+    const match = rawSolution.match(/```[a-zA-Z0-9+#\s]*[\r\n]+([\s\S]*?)```/);
+    if (match) {
+      return match[1].trim();
+    }
 
-    // If no fences, try to find the code block after explanation
-    const lines = rawSolution.split("\n");
+    // Try finding the start of code if fences are missing
+    const lines = rawSolution.split(/\r?\n/);
     const codeStart = lines.findIndex(
       (l) =>
         l.startsWith("class ") ||
