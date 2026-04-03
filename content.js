@@ -156,165 +156,29 @@
     return data.solution;
   }
 
-  // ---------- Code Insertion ----------
-
   /**
-   * Injects a script into the page's MAIN world (not the isolated content-script world)
-   * so we can access Monaco/CodeMirror editor APIs and React internals directly.
-   * Returns a Promise that resolves to true/false.
+   * Sends the code to the background script, which injects it into the page's
+   * MAIN world via chrome.scripting.executeScript — bypassing CSP completely.
    */
   function insertIntoEditor(code) {
     return new Promise((resolve) => {
-      const callbackId = "lc_solver_cb_" + Date.now();
-
-      function onResult(event) {
-        if (event.data && event.data.type === callbackId) {
-          window.removeEventListener("message", onResult);
-          console.log("[LeetCode Solver]", event.data.message);
-          resolve(event.data.success);
-        }
-      }
-      window.addEventListener("message", onResult);
-
-      const script = document.createElement("script");
-      script.textContent = `
-        (function() {
-          const code = ${JSON.stringify(code)};
-          const cbId = ${JSON.stringify(callbackId)};
-          let success = false;
-          let message = "No editor found";
-
-          try {
-            // Method 1: window.monaco API (if global is exposed)
-            // Note: LeetCode does NOT always register the editor in getEditors(),
-            // but the models are always available in getModels().
-            if (window.monaco && window.monaco.editor) {
-              const models = window.monaco.editor.getModels();
-              for (let i = 0; i < models.length; i++) {
-                const model = models[i];
-                if (model && typeof model.getLanguageId === 'function') {
-                  const lang = model.getLanguageId();
-                  // Skip internal/UI models and only replace actual code models
-                  if (lang && !['plaintext', 'json', 'markdown', 'css', 'html'].includes(lang)) {
-                    model.setValue(code);
-                    success = true;
-                    message = "Inserted via window.monaco model.setValue (cleared & replaced)";
-                  }
-                }
-              }
-            }
-
-            // Method 2: Try to find Monaco or CodeMirror 6 via React Fiber Traversal
-            if (!success) {
-              const editorEls = document.querySelectorAll('.monaco-editor, .cm-editor, .react-codemirror2, [class*="editor-container"], .inputarea');
-              for (const el of editorEls) {
-                let current = el;
-                let found = false;
-                while (current && current !== document.body && !found) {
-                  const fiberKey = Object.keys(current).find(k => k.startsWith('__reactFiber$'));
-                  if (fiberKey) {
-                    let fiber = current[fiberKey];
-                    while (fiber && !found) {
-                      // Monaco via stateNode
-                      if (fiber.stateNode && fiber.stateNode.editor && typeof fiber.stateNode.editor.getModel === 'function') {
-                        const ed = fiber.stateNode.editor;
-                        if (ed.getModel()) {
-                           ed.getModel().setValue(code);
-                           success = true;
-                           found = true;
-                           message = "Inserted via React Fiber stateNode (Monaco model.setValue)";
-                        }
-                      }
-                      
-                      // CodeMirror / Monaco via props.onChange
-                      if (!found && fiber.memoizedProps) {
-                        const props = fiber.memoizedProps;
-                        // For generic controlled editors
-                        if (typeof props.onChange === 'function' && typeof props.value === 'string') {
-                           props.onChange(code);
-                           success = true;
-                           found = true;
-                           message = "Inserted via React Fiber memoizedProps.onChange";
-                        }
-                        // CodeMirror 6 view.dispatch
-                        if (!found && props.view && typeof props.view.dispatch === 'function') {
-                           const view = props.view;
-                           view.dispatch({
-                             changes: { from: 0, to: view.state.doc.length, insert: code }
-                           });
-                           success = true;
-                           found = true;
-                           message = "Inserted via React Fiber view.dispatch";
-                        }
-                      }
-                      fiber = fiber.return;
-                    }
-                  }
-                  if (found) break;
-                  current = current.parentElement;
-                }
-                if (success) break;
-              }
-            }
-
-            // Method 3: CodeMirror 6 (LeetCode's new dynamic layout DOM fallback)
-            if (!success) {
-              const cmContent = document.querySelector('.cm-content[contenteditable="true"], [contenteditable="true"].cm-editor');
-              if (cmContent) {
-                 cmContent.focus();
-                 const selection = window.getSelection();
-                 const range = document.createRange();
-                 range.selectNodeContents(cmContent);
-                 selection.removeAllRanges();
-                 selection.addRange(range);
-                 document.execCommand('insertText', false, code);
-                 success = true;
-                 message = "Inserted via CodeMirror 6 selection replacement";
-              }
-            }
-
-            // Method 4: Ultra-broad Monaco Textarea Keyboard Simulation Fallback
-            if (!success) {
-               const textarea = document.querySelector(".inputarea, textarea, [class*='monaco-mouse-cursor-text']");
-               if (textarea) {
-                  textarea.focus();
-                  
-                  // Simulate Ctrl+A
-                  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-                  const keyEvent = new KeyboardEvent('keydown', {
-                      key: 'a',
-                      code: 'KeyA',
-                      keyCode: 65,
-                      ctrlKey: !isMac,
-                      metaKey: isMac,
-                      bubbles: true,
-                      cancelable: true
-                  });
-                  textarea.dispatchEvent(keyEvent);
-                  
-                  setTimeout(() => {
-                      document.execCommand("insertText", false, code);
-                      window.postMessage({ type: cbId, success: true, message: "Code inserted via generic textarea Ctrl+A fallback" }, "*");
-                  }, 100);
-                  return; // Prevent synchronous postMessage
-               }
-            }
-
-          } catch(e) {
-            message = "Extraction Error: " + e.message;
+      chrome.runtime.sendMessage(
+        { type: "INSERT_CODE", code: code },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            console.error("[LeetCode Solver] Message error:", chrome.runtime.lastError.message);
+            resolve(false);
+            return;
           }
-
-          window.postMessage({ type: cbId, success: success, message: message }, "*");
-        })();
-      `;
-      document.documentElement.appendChild(script);
-      script.remove();
-
-      // Safety timeout
-      setTimeout(() => {
-        window.removeEventListener("message", onResult);
-        resolve(false);
-      }, 3000);
+          if (response && response.success) {
+            console.log("[LeetCode Solver]", response.message);
+            resolve(true);
+          } else {
+            console.warn("[LeetCode Solver]", response ? response.message : "No response");
+            resolve(false);
+          }
+        }
+      );
     });
   }
 
